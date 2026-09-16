@@ -316,7 +316,6 @@ PLAYERS.forEach(p=>{
   p.traitCupChamp = p.slavaCups > 0;
   p.traitDecorated = p.nominated && p.wonAward;
   p.traitFrontOffice = p.secretary || p.exec || p.everFO;
-  p.traitRisingStar = !p.veteran && (p.goals >= medianGoals || p.assists >= medianAssists);
 });
 
 const TRAIT_ATTRS = [
@@ -325,7 +324,6 @@ const TRAIT_ATTRS = [
   {key:'traitCupChamp', text:'Has this player ever won a Slava Cup?'},
   {key:'traitDecorated', text:'Was this player both nominated for AND did they actually win an award in Season 7?'},
   {key:'traitFrontOffice', text:'Has this player ever held a front-office role — exec, secretary, or FO?'},
-  {key:'traitRisingStar', text:"Is this player someone who joined pro ro-hockey in NRHA S1 or later?"}
 ];
 
 let candidates = [];
