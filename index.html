@@ -366,6 +366,10 @@ function pickQuestion(pool){
   // Prefer questions that split the current pool as evenly as possible.
   // This keeps asking useful questions instead of jumping to a guess.
   candidatesPool.sort((x,y)=>{
+    // Prefer questions capable of isolating at least one candidate.
+    const xOne = (x.yes === 1 || x.no === 1) ? 1 : 0;
+    const yOne = (y.yes === 1 || y.no === 1) ? 1 : 0;
+    if (yOne !== xOne) return yOne - xOne;
     if (y.score !== x.score) return y.score - x.score;
     // Prefer the question with the larger absolute reduction on a Yes/No answer.
     const xWorst = Math.max(x.yes, x.no);
@@ -524,6 +528,12 @@ function renderQuestion(){
 
 
 function renderRevealConfirm(player){
+  // Never confirm/guess a player unless the candidate pool has exactly one.
+  if (candidates.length !== 1 || candidates[0].name !== player.name){
+    proceed();
+    return;
+  }
+
   if (player.confirmQ){
     app.innerHTML = `
       <div class="fade-in">
@@ -549,6 +559,14 @@ function renderRevealConfirm(player){
 }
 
 function renderGuess(player){
+  // HARD SAFETY CHECK: the game may NEVER show a guess while multiple
+  // candidates remain. A guess is valid only when exactly one candidate
+  // remains in the candidate pool.
+  if (candidates.length !== 1 || candidates[0].name !== player.name){
+    proceed();
+    return;
+  }
+
   app.innerHTML = `
     <div class="fade-in">
       <div class="eyebrow">NRHA · SEASON 7</div>
