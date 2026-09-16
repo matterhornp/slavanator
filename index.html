@@ -420,6 +420,10 @@ function esc(s){
   return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
 
+// Supabase configuration for private jersey-number submissions.
+const SUPABASE_URL = 'https://bcjfkwrrzljsevtnwlsp.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_LE6yi3QUmYxQ-cOxswUznA_Mv9Xnyhh';
+
 function render(view, data){
   window.scrollTo(0,0);
   if (view==='start') return renderStart();
@@ -430,7 +434,6 @@ function render(view, data){
   if (view==='number-form') return renderNumberForm(data.player);
   if (view==='stumped') return renderStumped();
   if (view==='manual-pick') return renderManualPick();
-  if (view==='admin') return renderAdmin();
 }
 
 function renderStart(){
@@ -445,14 +448,12 @@ function renderStart(){
         </p>
         <button class="btn btn-primary" id="start-btn">Start Guessing</button>
       </div>
-      <div class="footer-link"><button id="admin-link">Admin: view submitted jersey numbers</button></div>
     </div>
   `;
   document.getElementById('start-btn').onclick = () => {
     resetState();
     proceed();
   };
-  document.getElementById('admin-link').onclick = () => render('admin');
 }
 
 function progressPct(){
@@ -626,14 +627,26 @@ function renderNumberForm(player){
 }
 
 async function submitJerseyNumber(name, number){
-  let log = [];
-  try {
-    const existing = await window.storage.get('jersey_submissions', true);
-    if (existing && existing.value) log = JSON.parse(existing.value);
-  } catch(e) { log = []; }
-  log.push({name, number, ts: new Date().toISOString()});
-  await window.storage.set('jersey_submissions', JSON.stringify(log), true);
+  const response = await fetch(`${SUPABASE_URL}/rest/v1/jersey_submissions`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'apikey': SUPABASE_ANON_KEY,
+      'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+      'Prefer': 'return=minimal'
+    },
+    body: JSON.stringify({
+      player_name: name,
+      jersey_number: number
+    })
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`Submission failed (${response.status}): ${errorText}`);
+  }
 }
+
 
 function renderStumped(){
   app.innerHTML = `
@@ -689,44 +702,6 @@ function renderManualPick(){
   document.getElementById('restart-btn').onclick = () => render('start');
 }
 
-async function renderAdmin(){
-  app.innerHTML = `
-    <div class="fade-in">
-      <div class="eyebrow">ADMIN</div>
-      <h1 class="title" style="font-size:28px;">Submitted Numbers</h1>
-      <div class="card" id="admin-card">
-        <p style="color:var(--ice-dim);font-size:14px;">Loading...</p>
-      </div>
-      <div class="footer-link"><button id="back-start">Back to game</button></div>
-    </div>
-  `;
-  document.getElementById('back-start').onclick = () => render('start');
-  let log = [];
-  try {
-    const existing = await window.storage.get('jersey_submissions', true);
-    if (existing && existing.value) log = JSON.parse(existing.value);
-  } catch(e){ log = []; }
-  const card = document.getElementById('admin-card');
-  if (log.length===0){
-    card.innerHTML = `<p style="color:var(--ice-dim);font-size:14px;">No submissions yet.</p>`;
-    return;
-  }
-  const rows = log.slice().reverse().map(e=>`<tr><td>${esc(e.name)}</td><td>#${esc(e.number)}</td><td>${esc(new Date(e.ts).toLocaleString())}</td></tr>`).join('');
-  card.innerHTML = `
-    <table class="admin-table">
-      <tr><th>Player</th><th>Number</th><th>Submitted</th></tr>
-      ${rows}
-    </table>
-    <button class="btn btn-ghost" id="copy-csv">Copy as CSV</button>
-  `;
-  document.getElementById('copy-csv').onclick = () => {
-    const csv = 'name,number,timestamp\n' + log.map(e=>`${e.name},${e.number},${e.ts}`).join('\n');
-    navigator.clipboard.writeText(csv).then(()=>{
-      document.getElementById('copy-csv').textContent = 'Copied!';
-      setTimeout(()=>{ document.getElementById('copy-csv').textContent = 'Copy as CSV'; }, 1500);
-    });
-  };
-}
 
 render('start');
 </script>
