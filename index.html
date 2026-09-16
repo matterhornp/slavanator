@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Slavanator — NRHA Season 7 Guesser</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --rink-navy:#0a1b2e;
+  --rink-navy-deep:#071322;
+  --panel:#0f2740;
+  --panel-line:#1c3a58;
+  --ice:#eaf4fb;
+  --ice-dim:#a9c1d6;
+  --gold:#f0b429;
+  --gold-dim:#c9931f;
+  --red:#e5484d;
+  --green:#3ecf8e;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  background:
+    radial-gradient(ellipse 900px 500px at 50% -10%, #12314f 0%, transparent 60%),
+    repeating-linear-gradient(180deg, rgba(234,244,251,0.02) 0px, rgba(234,244,251,0.02) 1px, transparent 1px, transparent 48px),
+    var(--rink-navy);
+  color:var(--ice);
+  font-family:'Inter',sans-serif;
+  min-height:100vh;
+  display:flex;
+  justify-content:center;
+  padding:32px 16px 56px;
+  position:relative;
+  overflow-x:hidden;
+}
+body::before{
+  content:"";
+  position:absolute;
+  top:-120px;
+  left:50%;
+  transform:translateX(-50%);
+  width:640px;
+  height:640px;
+  border:2px solid rgba(234,244,251,0.05);
+  border-radius:50%;
+  pointer-events:none;
+}
+body::after{
+  content:"";
+  position:absolute;
+  top:-120px;
+  left:50%;
+  transform:translateX(-50%);
+  width:2px;
+  height:640px;
+  background:rgba(234,244,251,0.04);
+  pointer-events:none;
+}
+#app{
+  width:100%;
+  max-width:520px;
+  position:relative;
+  z-index:1;
+}
+.eyebrow{
+  font-family:'Oswald',sans-serif;
+  font-size:13px;
+  letter-spacing:0.14em;
+  color:var(--gold);
+  font-weight:500;
+  margin-bottom:6px;
+}
+h1.title{
+  font-family:'Oswald',sans-serif;
+  font-weight:700;
+  font-size:40px;
+  line-height:1.02;
+  margin:0 0 8px;
+  color:var(--ice);
+}
+p.sub{
+  color:var(--ice-dim);
+  font-size:15.5px;
+  line-height:1.5;
+  margin:0 0 28px;
+  max-width:44ch;
+}
+.card{
+  background:linear-gradient(180deg, var(--panel), #0c2036);
+  border:1px solid var(--panel-line);
+  border-radius:14px;
+  padding:28px 26px;
+  box-shadow:0 24px 60px -20px rgba(0,0,0,0.6);
+}
+.btn{
+  font-family:'Oswald',sans-serif;
+  font-weight:600;
+  font-size:16px;
+  letter-spacing:0.01em;
+  border-radius:9px;
+  border:none;
+  padding:14px 18px;
+  cursor:pointer;
+  transition:transform .12s ease, background .15s ease, box-shadow .15s ease;
+  width:100%;
+}
+.btn:active{transform:scale(0.98);}
+.btn-yes{background:var(--green);color:#052a1c;}
+.btn-yes:hover{background:#57dba0;}
+.btn-no{background:var(--red);color:#2a0708;}
+.btn-no:hover{background:#ef6a6e;}
+.btn-dk{background:transparent;color:var(--ice-dim);border:1px solid var(--panel-line);}
+.btn-dk:hover{border-color:var(--ice-dim);color:var(--ice);}
+.btn-primary{background:var(--gold);color:#2a1c02;}
+.btn-primary:hover{background:#f7c455;}
+.btn-ghost{background:transparent;color:var(--ice-dim);border:1px dashed var(--panel-line);font-weight:500;font-size:14px;}
+.btn-ghost:hover{color:var(--ice);border-color:var(--ice-dim);}
+.row{display:flex;gap:10px;}
+.row > .btn{flex:1;}
+.stack{display:flex;flex-direction:column;gap:10px;}
+.question-text{
+  font-family:'Oswald',sans-serif;
+  font-size:25px;
+  font-weight:600;
+  line-height:1.28;
+  color:var(--ice);
+  margin:2px 0 26px;
+}
+.meta-row{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  font-size:12.5px;
+  color:var(--ice-dim);
+  margin-bottom:16px;
+  font-family:'Oswald',sans-serif;
+  letter-spacing:0.04em;
+}
+.progress-track{
+  height:6px;
+  border-radius:4px;
+  background:rgba(234,244,251,0.08);
+  overflow:hidden;
+  margin-bottom:22px;
+}
+.progress-fill{
+  height:100%;
+  background:linear-gradient(90deg, var(--gold-dim), var(--gold));
+  border-radius:4px;
+  transition:width .4s ease;
+}
+.jersey-number{
+  font-family:'Oswald',sans-serif;
+  font-weight:700;
+  font-size:64px;
+  color:var(--gold);
+  line-height:1;
+}
+.reveal-name{
+  font-family:'Oswald',sans-serif;
+  font-weight:700;
+  font-size:34px;
+  color:var(--ice);
+  margin:4px 0 2px;
+}
+.reveal-team{
+  color:var(--ice-dim);
+  font-size:14.5px;
+  margin-bottom:20px;
+}
+.stat-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr 1fr;
+  gap:10px;
+  margin:18px 0 22px;
+}
+.stat-box{
+  background:rgba(234,244,251,0.04);
+  border:1px solid var(--panel-line);
+  border-radius:8px;
+  padding:10px 8px;
+  text-align:center;
+}
+.stat-num{
+  font-family:'Oswald',sans-serif;
+  font-weight:700;
+  font-size:22px;
+  color:var(--gold);
+}
+.stat-label{
+  font-size:10.5px;
+  color:var(--ice-dim);
+  text-transform:uppercase;
+  letter-spacing:0.06em;
+  margin-top:2px;
+}
+input[type="text"], input[type="number"]{
+  width:100%;
+  background:rgba(234,244,251,0.05);
+  border:1px solid var(--panel-line);
+  border-radius:8px;
+  padding:13px 14px;
+  color:var(--ice);
+  font-size:16px;
+  font-family:'Inter',sans-serif;
+  margin-bottom:12px;
+}
+input::placeholder{color:#5f7b93;}
+input:focus{outline:none;border-color:var(--gold-dim);}
+.footer-link{
+  text-align:center;
+  margin-top:22px;
+  font-size:12.5px;
+  color:#3f5b74;
+}
+.footer-link button{
+  background:none;border:none;color:#5a7891;text-decoration:underline;cursor:pointer;font-size:12.5px;font-family:'Inter',sans-serif;
+}
+.footer-link button:hover{color:var(--ice-dim);}
+.pill-list{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin:6px 0 20px;
+}
+.pill-btn{
+  font-family:'Inter',sans-serif;
+  font-size:14px;
+  font-weight:500;
+  background:rgba(234,244,251,0.04);
+  border:1px solid var(--panel-line);
+  color:var(--ice);
+  border-radius:20px;
+  padding:8px 14px;
+  cursor:pointer;
+}
+.pill-btn:hover{border-color:var(--gold-dim);}
+table.admin-table{
+  width:100%;
+  border-collapse:collapse;
+  font-size:13.5px;
+  margin:14px 0;
+}
+table.admin-table th{
+  text-align:left;
+  color:var(--ice-dim);
+  font-weight:600;
+  font-size:11.5px;
+  text-transform:uppercase;
+  letter-spacing:0.05em;
+  padding:6px 8px;
+  border-bottom:1px solid var(--panel-line);
+}
+table.admin-table td{
+  padding:8px 8px;
+  border-bottom:1px solid rgba(28,58,88,0.5);
+}
+.fade-in{animation:fadeIn .28s ease both;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+.thinking{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  color:var(--ice-dim);
+  font-size:14px;
+  margin-bottom:18px;
+}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--gold);animation:pulse 1.1s infinite ease-in-out;}
+.dot:nth-child(2){animation-delay:.15s;}
+.dot:nth-child(3){animation-delay:.3s;}
+@keyframes pulse{0%,80%,100%{opacity:.25;}40%{opacity:1;}}
+.small-note{font-size:12.5px;color:var(--ice-dim);margin-top:14px;line-height:1.5;}
+.confirm-name{color:var(--gold);}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+const PLAYERS = 
+[{"name":"Lavyath","jersey":91,"team":"Atlanta Thrashers","playoffs":true,"position":"Winger","veteran":true,"gp":12,"goals":53,"assists":14,"potg":2,"everFO":true,"secretary":false,"exec":true,"nominated":true,"wonAward":false,"slavaCups":5,"suspended":true,"confirmQ":"Is he in love with Femgus?"},{"name":"Matty","jersey":21,"team":"Atlanta Thrashers","playoffs":true,"position":"Winger","veteran":true,"gp":10,"goals":58,"assists":8,"potg":5,"everFO":true,"secretary":true,"exec":false,"nominated":true,"wonAward":false,"slavaCups":2,"suspended":false,"confirmQ":"Is this player known for being clutch?"},{"name":"ilikeroblox","jersey":1,"team":"Atlanta Thrashers","playoffs":true,"position":"UTIL","veteran":false,"gp":15,"goals":44,"assists":20,"potg":1,"everFO":false,"secretary":false,"exec":false,"nominated":false,"wonAward":false,"slavaCups":1,"suspended":false,"confirmQ":""},{"name":"hawksfan","jersey":41,"team":"Atlanta Thrashers","playoffs":true,"position":"UTIL","veteran":false,"gp":14,"goals":31,"assists":17,"potg":2,"everFO":false,"secretary":false,"exec":false,"nominated":true,"wonAward":false,"slavaCups":0,"suspended":false,"confirmQ":""},{"name":"Nova","jersey":-1,"team":"Atlanta Thrashers","playoffs":true,"position":"Winger","veteran":false,"gp":4,"goals":2,"assists":2,"potg":0,"everFO":false,"secretary":false,"exec":false,"nominated":false,"wonAward":false,"slavaCups":2,"suspended":false,"confirmQ":""},{"name":"Arigiri","jersey":30,"team":"Atlanta Thrashers","playoffs":true,"position":"Defense","veteran":false,"gp":4,"goals":1,"assists":8,"potg":0,"everFO":false,"secretary":false,"exec":false,"nominated":false,"wonAward":false,"slavaCups":0,"suspended":false,"confirmQ":"Is this player female?"},{"name":"Snowy","jersey":35,"team":"Atlanta Thrashers","playoffs":true,"position":"Defense","veteran":false,"gp":9,"goals":5,"assists":17,"potg":0,"everFO":false,"secretary":false,"exec":false,"nominated":false,"wonAward":false,"slavaCups":0,"suspended":true,"confirmQ":""},{"name":"AidanLough","jersey":-1,"team":"Atlanta Thrashers","playoffs":true,"position":"Goalie","veteran":false,"gp":1,"goals":0,"assists":0,"potg":0,"everFO":false,"secretary":false,"exec":false,"nominated":false,"wonAward":false,"slavaCups":1,"suspended":false,"confirmQ":"Is he one of the tuffest gks OAT?"},{"name":"Lobster","jersey":-1,"team":"San Jose Sharks","playoffs":true,"position":"Winger","veteran":true,"gp":11,"goals":85,"assists":16,"potg":4,"everFO":true,"secretary":false,"exec":false,"nominated":true,"wonAward":false,"slavaCups":4,"suspended":true,"confirmQ":""},{"name":"Drumisician","jersey":-1,"team":"San Jose Sharks","playoffs":true,"position":"Center","veteran":false,"gp":13,"goals":82,"assists":12,"potg":4,"everFO":true,"secretary":false,"exec":false,"nominated":true,"wonAward":true,"slavaCups":0,"suspended":false,"confirmQ":""},{"name":"Hellodarkness791","jersey":-1,"team":"San Jose Sharks","playoffs":true,"position":"Winger","veteran":false,"gp":13,"goals":39,"assists":15,"potg":0,"everFO":false,"secretary":false,"exec":false,"nominated":true,"wonAward":false,"slavaCups":0,"suspended":false,"confirmQ":""},{"name":"UserMunro","jersey":-1,"team":"San Jose Sharks","playoffs":true,"position":"Goalie","veteran":false,"gp":14,"goals":1,"assists":37,"potg":0,"everFO":false,"secretary":false,"exec":false,"nominated":true,"wonAward":false,"slavaCups":1,"suspended":false,"confirmQ":""},{"name":"Leeroy","jersey":-1,"team":"San Jose Sharks","playoffs":true,"position":"UTIL","veteran":false,"gp":12,"goals":3,"assists":11,"potg":1,"everFO":false,"secretary":false,"exec":false,"nominated":false,"wonAward":false,"slavaCups":1,"suspended":false,"confirmQ":""},{"name":"Sharkie","jersey":-1,"team":"San Jose Sharks","playoffs":true,"position":"Defense","veteran":false,"gp":5,"goals":3,"assists":6,"potg":0,"everFO":false,"secretary":false,"exec":false,"nominated":false,"wonAward":false,"slavaCups":1,"suspended":false,"confirmQ":""},{"name":"Killeralt1p0","jersey":-1,"team":"San Jose Sharks","playoffs":true,"position":"Winger","veteran":false,"gp":10,"goals":8,"assists":7,"potg":0,"everFO":false,"secretary":false,"exec":false,"nominated":false,"wonAward":false,"slavaCups":0,"suspended":false,"confirmQ":""},{"name":"OhHenri","jersey":-1,"team":"San Jose Sharks","playoffs":true,"position":"Defense","veteran":true,"gp":4,"goals":0,"assists":4,"potg":0,"everFO":true,"secretary":false,"exec":true,"nominated":false,"wonAward":false,"slavaCups":1,"suspended":false,"confirmQ":"Is he the league commissioner?"},{"name":"herbmaxxer","jersey":-1,"team":"San Jose Sharks","playoffs":true,"position":"Defense","veteran":false,"gp":6,"goals":0,"assists":12,"potg":0,"everFO":false,"secretary":false,"exec":false,"nominated":false,"wonAward":false,"slavaCups":0,"suspended":false,"confirmQ":""},{"name":"Javis","jersey":-1,"team":"Seattle Kraken","playoffs":false,"position":"Winger","veteran":false,"gp":15,"goals":96,"assists":6,"potg":4,"everFO":false,"secretary":false,"exec":false,"nominated":false,"wonAward":false,"slavaCups":1,"suspended":false,"confirmQ":"Does this play shoot lefty?"},{"name":"kennethwalkerglazer9","jersey":-1,"team":"Seattle Kraken","playoffs":false,"position":"Winger","veteran":false,"gp":12,"goals":39,"assists":10,"potg":0,"everFO":true,"secretary":false,"exec":false,"nominated":false,"wonAward":false,"slavaCups":0,"suspended":false,"confirmQ":""},{"name":"hallowner","jersey":-1,"team":"Seattle Kraken","playoffs":false,"position":"UTIL","veteran":false,"gp":14,"goals":8,"assists":38,"potg":0,"everFO":false,"secretary":false,"exec":false,"nominated":true,"wonAward":true,"slavaCups":0,"suspended":false,"confirmQ":""},{"name":"Rizek1cz","jersey":-1,"team":"Seattle Kraken","playoffs":false,"position":"Winger","veteran":false,"gp":5,"goals":15,"assists":5,"potg":1,"everFO":false,"secretary":false,"exec":false,"nominated":false,"wonAward":false,"slavaCups":0,"suspended":true,"confirmQ":""},{"name":"Broly","jersey":-1,"team":"Seattle Kraken","playoffs":false,"position":"Goalie","veteran":true,"gp":5,"goals":0,"assists":16,"potg":0,"everFO":true,"secretary":false,"exec":false,"nominated":false,"wonAward":false,"slavaCups":0,"suspended":false,"confirmQ":""},{"name":"Ronald Reagan","jersey":-1,"team":"Seattle Kraken","playoffs":false,"position":"Defense","veteran":true,"gp":0,"goals":0,"assists":0,"potg":0,"everFO":false,"secretary":false,"exec":false,"nominated":false,"wonAward":false,"slavaCups":1,"suspended":false,"confirmQ":""},{"name":"NOT","jersey":-1,"team":"Seattle Kraken","playoffs":false,"position":"UTIL","veteran":false,"gp":1,"goals":0,"assists":1,"potg":0,"everFO":false,"secretary":false,"exec":false,"nominated":false,"wonAward":false,"slavaCups":0,"suspended":false,"confirmQ":""},{"name":"Siucis","jersey":-1,"team":"Buffalo Sabres","playoffs":true,"position":"UTIL","veteran":false,"gp":13,"goals":126,"assists":15,"potg":10,"everFO":false,"secretary":false,"exec":false,"nominated":true,"wonAward":true,"slavaCups":0,"suspended":false,"confirmQ":"Is this player one of the best to never win a cup?"},{"name":"Twix","jersey":-1,"team":"Buffalo Sabres","playoffs":false,"position":"UTIL","veteran":false,"gp":7,"goals":31,"assists":10,"potg":1,"everFO":false,"secretary":false,"exec":false,"nominated":false,"wonAward":false,"slavaCups":1,"suspended":true,"confirmQ":"Did this player retire after having a poor finals performance?"},{"name":"Lesonian","jersey":-1,"team":"Buffalo Sabres","playoffs":true,"position":"Defense","veteran":false,"gp":13,"goals":12,"assists":20,"potg":0,"everFO":false,"secretary":false,"exec":false,"nominated":true,"wonAward":false,"slavaCups":0,"suspended":false,"confirmQ":"Does this player like to sauce pass?"},{"name":"Mr Drizzle","jersey":-1,"team":"Buffalo Sabres","playoffs":true,"position":"Defense","veteran":false,"gp":12,"goals":1,"assists":17,"potg":0,"everFO":true,"secretary":false,"exec":false,"nominated":true,"wonAward":false,"slavaCups":1,"suspended":false,"confirmQ":""},{"name":"carsonmonkey2050","jersey":-1,"team":"Buffalo Sabres","playoffs":true,"position":"Goalie","veteran":false,"gp":10,"goals":0,"assists":21,"potg":0,"everFO":false,"secretary":false,"exec":false,"nominated":true,"wonAward":true,"slavaCups":0,"suspended":false,"confirmQ":""},{"name":"devRileyy","jersey":-1,"team":"Buffalo Sabres","playoffs":true,"position":"UTIL","veteran":false,"gp":5,"goals":1,"assists":3,"potg":0,"everFO":false,"secretary":false,"exec":false,"nominated":false,"wonAward":false,"slavaCups":0,"suspended":false,"confirmQ":""},{"name":"Aether","jersey":-1,"team":"Buffalo Sabres","playoffs":true,"position":"UTIL","veteran":false,"gp":10,"goals":8,"assists":12,"potg":0,"everFO":false,"secretary":false,"exec":false,"nominated":true,"wonAward":false,"slavaCups":0,"suspended":true,"confirmQ":""},{"name":"Freddy","jersey":-1,"team":"Buffalo Sabres","playoffs":true,"position":"UTIL","veteran":false,"gp":3,"goals":1,"assists":1,"potg":0,"everFO":false,"secretary":false,"exec":false,"nominated":false,"wonAward":false,"slavaCups":0,"suspended":true,"confirmQ":""},{"name":"YourLocalLatvian","jersey":-1,"team":"Buffalo Sabres","playoffs":true,"position":"Goalie","veteran":false,"gp":4,"goals":0,"assists":17,"potg":0,"everFO":false,"secretary":false,"exec":false,"nominated":false,"wonAward":false,"slavaCups":0,"suspended":false,"confirmQ":""},{"name":"darksxriptr","jersey":-1,"team":"Buffalo Sabres","playoffs":true,"position":"UTIL","veteran":false,"gp":6,"goals":18,"assists":5,"potg":0,"everFO":false,"secretary":false,"exec":false,"nominated":false,"wonAward":false,"slavaCups":0,"suspended":false,"confirmQ":""},{"name":"Sea","jersey":-1,"team":"Buffalo Sabres","playoffs":true,"position":"Defense","veteran":false,"gp":3,"goals":0,"assists":3,"potg":0,"everFO":false,"secretary":false,"exec":false,"nominated":false,"wonAward":false,"slavaCups":0,"suspended":false,"confirmQ":""},{"name":"Sleepy Joe","jersey":-1,"team":"Dallas Stars","playoffs":true,"position":"Winger","veteran":true,"gp":15,"goals":68,"assists":29,"potg":5,"everFO":true,"secretary":true,"exec":false,"nominated":false,"wonAward":false,"slavaCups":1,"suspended":false,"confirmQ":""},{"name":"Omar","jersey":-1,"team":"Dallas Stars","playoffs":true,"position":"Winger","veteran":false,"gp":14,"goals":79,"assists":18,"potg":5,"everFO":false,"secretary":true,"exec":false,"nominated":true,"wonAward":true,"slavaCups":3,"suspended":false,"confirmQ":"Has this player won 3 cups in a row?"},{"name":"Jeffy","jersey":-1,"team":"Dallas Stars","playoffs":true,"position":"Center","veteran":false,"gp":15,"goals":42,"assists":7,"potg":1,"everFO":false,"secretary":false,"exec":false,"nominated":true,"wonAward":true,"slavaCups":2,"suspended":false,"confirmQ":""},{"name":"CantDel","jersey":-1,"team":"Dallas Stars","playoffs":true,"position":"Goalie","veteran":false,"gp":12,"goals":0,"assists":38,"potg":0,"everFO":true,"secretary":true,"exec":false,"nominated":true,"wonAward":true,"slavaCups":2,"suspended":true,"confirmQ":"Does this player crashout a lot?"},{"name":"easternindustrial","jersey":-1,"team":"Dallas Stars","playoffs":true,"position":"Defense","veteran":true,"gp":9,"goals":4,"assists":9,"potg":0,"everFO":false,"secretary":false,"exec":false,"nominated":false,"wonAward":false,"slavaCups":1,"suspended":true,"confirmQ":"Is this player racist?"},{"name":"GBacs","jersey":-1,"team":"Dallas Stars","playoffs":true,"position":"Winger","veteran":true,"gp":3,"goals":0,"assists":0,"potg":0,"everFO":false,"secretary":false,"exec":true,"nominated":false,"wonAward":false,"slavaCups":3,"suspended":false,"confirmQ":""},{"name":"Cloudy","jersey":-1,"team":"Dallas Stars","playoffs":true,"position":"Defense","veteran":true,"gp":0,"goals":0,"assists":0,"potg":0,"everFO":false,"secretary":false,"exec":false,"nominated":false,"wonAward":false,"slavaCups":2,"suspended":false,"confirmQ":""},{"name":"IPNH","jersey":-1,"team":"Dallas Stars","playoffs":true,"position":"Defense","veteran":false,"gp":5,"goals":1,"assists":2,"potg":0,"everFO":false,"secretary":false,"exec":false,"nominated":false,"wonAward":false,"slavaCups":1,"suspended":false,"confirmQ":""},{"name":"Abdel1","jersey":-1,"team":"Dallas Stars","playoffs":true,"position":"Defense","veteran":false,"gp":3,"goals":0,"assists":2,"potg":0,"everFO":false,"secretary":false,"exec":false,"nominated":false,"wonAward":false,"slavaCups":1,"suspended":false,"confirmQ":"Does this player have a brother in the league?"},{"name":"MuckFessier","jersey":-1,"team":"Dallas Stars","playoffs":true,"position":"Defense","veteran":true,"gp":2,"goals":0,"assists":0,"potg":0,"everFO":false,"secretary":false,"exec":false,"nominated":false,"wonAward":false,"slavaCups":1,"suspended":false,"confirmQ":""},{"name":"4bn","jersey":-1,"team":"New York Rangers","playoffs":true,"position":"UTIL","veteran":false,"gp":7,"goals":16,"assists":3,"potg":0,"everFO":false,"secretary":false,"exec":false,"nominated":false,"wonAward":false,"slavaCups":0,"suspended":true,"confirmQ":""},{"name":"driedwater","jersey":-1,"team":"New York Rangers","playoffs":false,"position":"Goalie","veteran":false,"gp":9,"goals":0,"assists":4,"potg":0,"everFO":false,"secretary":false,"exec":false,"nominated":false,"wonAward":false,"slavaCups":0,"suspended":false,"confirmQ":"Did this player have a massive falloff?"},{"name":"BossBoston12","jersey":-1,"team":"New York Rangers","playoffs":false,"position":"Winger","veteran":false,"gp":6,"goals":15,"assists":2,"potg":0,"everFO":false,"secretary":false,"exec":false,"nominated":false,"wonAward":false,"slavaCups":0,"suspended":false,"confirmQ":""},{"name":"Eferah","jersey":-1,"team":"New York Rangers","playoffs":false,"position":"Winger","veteran":false,"gp":2,"goals":3,"assists":3,"potg":0,"everFO":false,"secretary":false,"exec":false,"nominated":false,"wonAward":false,"slavaCups":0,"suspended":false,"confirmQ":""},{"name":"Kapr","jersey":-1,"team":"New York Rangers","playoffs":false,"position":"Winger","veteran":false,"gp":6,"goals":10,"assists":3,"potg":0,"everFO":true,"secretary":false,"exec":false,"nominated":false,"wonAward":false,"slavaCups":0,"suspended":false,"confirmQ":""},{"name":"Isbltv","jersey":-1,"team":"New York Rangers","playoffs":false,"position":"Defense","veteran":false,"gp":4,"goals":0,"assists":7,"potg":0,"everFO":false,"secretary":false,"exec":false,"nominated":false,"wonAward":false,"slavaCups":0,"suspended":false,"confirmQ":""},{"name":"Cannedpennyo7","jersey":-1,"team":"New York Rangers","playoffs":false,"position":"Winger","veteran":false,"gp":5,"goals":6,"assists":4,"potg":0,"everFO":false,"secretary":false,"exec":false,"nominated":false,"wonAward":false,"slavaCups":0,"suspended":false,"confirmQ":""},{"name":"grixpc","jersey":-1,"team":"New York Rangers","playoffs":false,"position":"UTIL","veteran":false,"gp":5,"goals":2,"assists":4,"potg":0,"everFO":false,"secretary":false,"exec":false,"nominated":false,"wonAward":false,"slavaCups":0,"suspended":false,"confirmQ":""},{"name":"HumaUnleashed","jersey":-1,"team":"New York Rangers","playoffs":false,"position":"Defense","veteran":false,"gp":3,"goals":2,"assists":0,"potg":0,"everFO":false,"secretary":false,"exec":false,"nominated":false,"wonAward":false,"slavaCups":0,"suspended":false,"confirmQ":""},{"name":"zebracat","jersey":-1,"team":"New York Rangers","playoffs":false,"position":"Winger","veteran":false,"gp":3,"goals":6,"assists":1,"potg":0,"everFO":false,"secretary":false,"exec":false,"nominated":false,"wonAward":false,"slavaCups":0,"suspended":false,"confirmQ":""},{"name":"rvr","jersey":-1,"team":"Winnipeg Jets","playoffs":true,"position":"Winger","veteran":false,"gp":14,"goals":93,"assists":25,"potg":5,"everFO":false,"secretary":false,"exec":true,"nominated":false,"wonAward":false,"slavaCups":2,"suspended":false,"confirmQ":""},{"name":"Kujo","jersey":-1,"team":"Winnipeg Jets","playoffs":true,"position":"Defense","veteran":false,"gp":9,"goals":5,"assists":22,"potg":0,"everFO":true,"secretary":false,"exec":false,"nominated":true,"wonAward":false,"slavaCups":1,"suspended":false,"confirmQ":""},{"name":"Maxieshack","jersey":-1,"team":"Winnipeg Jets","playoffs":true,"position":"Defense","veteran":false,"gp":11,"goals":2,"assists":21,"potg":0,"everFO":false,"secretary":false,"exec":false,"nominated":true,"wonAward":false,"slavaCups":1,"suspended":false,"confirmQ":""},{"name":"Opti","jersey":-1,"team":"Winnipeg Jets","playoffs":true,"position":"UTIL","veteran":false,"gp":11,"goals":70,"assists":13,"potg":3,"everFO":false,"secretary":false,"exec":false,"nominated":false,"wonAward":false,"slavaCups":1,"suspended":false,"confirmQ":""},{"name":"Soy_Goon","jersey":-1,"team":"Winnipeg Jets","playoffs":true,"position":"UTIL","veteran":false,"gp":12,"goals":30,"assists":14,"potg":0,"everFO":false,"secretary":false,"exec":false,"nominated":true,"wonAward":false,"slavaCups":0,"suspended":false,"confirmQ":""},{"name":"David","jersey":-1,"team":"Winnipeg Jets","playoffs":true,"position":"UTIL","veteran":false,"gp":8,"goals":15,"assists":12,"potg":0,"everFO":true,"secretary":false,"exec":true,"nominated":true,"wonAward":false,"slavaCups":0,"suspended":false,"confirmQ":""},{"name":"Chippie","jersey":-1,"team":"Winnipeg Jets","playoffs":true,"position":"Goalie","veteran":true,"gp":7,"goals":0,"assists":13,"potg":0,"everFO":false,"secretary":false,"exec":false,"nominated":false,"wonAward":false,"slavaCups":1,"suspended":false,"confirmQ":""},{"name":"Jon","jersey":-1,"team":"Winnipeg Jets","playoffs":true,"position":"UTIL","veteran":false,"gp":6,"goals":18,"assists":5,"potg":1,"everFO":false,"secretary":false,"exec":false,"nominated":false,"wonAward":false,"slavaCups":0,"suspended":false,"confirmQ":""},{"name":"Thrawn","jersey":-1,"team":"Winnipeg Jets","playoffs":true,"position":"Goalie","veteran":false,"gp":9,"goals":0,"assists":14,"potg":0,"everFO":false,"secretary":false,"exec":false,"nominated":false,"wonAward":false,"slavaCups":0,"suspended":false,"confirmQ":""},{"name":"20Squadron","jersey":-1,"team":"New Jersey Devils","playoffs":false,"position":"UTIL","veteran":true,"gp":7,"goals":17,"assists":8,"potg":0,"everFO":true,"secretary":false,"exec":true,"nominated":true,"wonAward":false,"slavaCups":6,"suspended":false,"confirmQ":""},{"name":"Seppov","jersey":-1,"team":"New Jersey Devils","playoffs":false,"position":"Winger","veteran":false,"gp":12,"goals":42,"assists":16,"potg":1,"everFO":false,"secretary":false,"exec":false,"nominated":false,"wonAward":false,"slavaCups":0,"suspended":false,"confirmQ":""},{"name":"Jorge","jersey":-1,"team":"New Jersey Devils","playoffs":false,"position":"Winger","veteran":false,"gp":12,"goals":28,"assists":8,"potg":0,"everFO":false,"secretary":false,"exec":false,"nominated":false,"wonAward":false,"slavaCups":0,"suspended":false,"confirmQ":""},{"name":"Saphier","jersey":-1,"team":"New Jersey Devils","playoffs":false,"position":"UTIL","veteran":false,"gp":13,"goals":25,"assists":17,"potg":1,"everFO":false,"secretary":true,"exec":false,"nominated":true,"wonAward":true,"slavaCups":0,"suspended":false,"confirmQ":"Is this player a strong leader?"},{"name":"Tooth_TheTired27","jersey":-1,"team":"New Jersey Devils","playoffs":false,"position":"UTIL","veteran":false,"gp":13,"goals":6,"assists":15,"potg":0,"everFO":false,"secretary":false,"exec":false,"nominated":true,"wonAward":true,"slavaCups":0,"suspended":false,"confirmQ":""},{"name":"henrys_back1","jersey":-1,"team":"New Jersey Devils","playoffs":false,"position":"Goalie","veteran":false,"gp":9,"goals":2,"assists":13,"potg":0,"everFO":false,"secretary":false,"exec":false,"nominated":true,"wonAward":false,"slavaCups":0,"suspended":false,"confirmQ":""},{"name":"ColdBuffaloSabres15","jersey":-1,"team":"New Jersey Devils","playoffs":false,"position":"Winger","veteran":false,"gp":2,"goals":1,"assists":2,"potg":0,"everFO":false,"secretary":false,"exec":false,"nominated":false,"wonAward":false,"slavaCups":0,"suspended":false,"confirmQ":""},{"name":"Rojo","jersey":-1,"team":"New Jersey Devils","playoffs":false,"position":"UTIL","veteran":false,"gp":8,"goals":9,"assists":4,"potg":1,"everFO":false,"secretary":false,"exec":false,"nominated":false,"wonAward":false,"slavaCups":0,"suspended":false,"confirmQ":""},{"name":"dx0rki","jersey":-1,"team":"Chicago Blackhawks","playoffs":true,"position":"Center","veteran":false,"gp":14,"goals":91,"assists":17,"potg":6,"everFO":false,"secretary":false,"exec":false,"nominated":true,"wonAward":false,"slavaCups":0,"suspended":false,"confirmQ":""},{"name":"Rocky","jersey":-1,"team":"Chicago Blackhawks","playoffs":true,"position":"Winger","veteran":false,"gp":14,"goals":56,"assists":19,"potg":2,"everFO":false,"secretary":false,"exec":false,"nominated":false,"wonAward":false,"slavaCups":0,"suspended":false,"confirmQ":"Does this player take a ton of corner shots eh?"},{"name":"Jakey","jersey":-1,"team":"Chicago Blackhawks","playoffs":true,"position":"Goalie","veteran":true,"gp":14,"goals":0,"assists":20,"potg":0,"everFO":false,"secretary":false,"exec":false,"nominated":true,"wonAward":false,"slavaCups":0,"suspended":false,"confirmQ":""},{"name":"Vipen","jersey":-1,"team":"Chicago Blackhawks","playoffs":true,"position":"Winger","veteran":true,"gp":2,"goals":2,"assists":1,"potg":0,"everFO":true,"secretary":false,"exec":false,"nominated":false,"wonAward":false,"slavaCups":0,"suspended":false,"confirmQ":"Is this player known for their reffing decisions"},{"name":"Kepi","jersey":-1,"team":"Chicago Blackhawks","playoffs":true,"position":"Defense","veteran":false,"gp":12,"goals":6,"assists":12,"potg":0,"everFO":false,"secretary":false,"exec":false,"nominated":false,"wonAward":false,"slavaCups":0,"suspended":false,"confirmQ":""},{"name":"Gwuerty","jersey":-1,"team":"Chicago Blackhawks","playoffs":true,"position":"Winger","veteran":false,"gp":13,"goals":17,"assists":11,"potg":0,"everFO":true,"secretary":false,"exec":false,"nominated":true,"wonAward":false,"slavaCups":0,"suspended":false,"confirmQ":""},{"name":"Zource","jersey":-1,"team":"Chicago Blackhawks","playoffs":true,"position":"Defense","veteran":false,"gp":4,"goals":0,"assists":5,"potg":0,"everFO":false,"secretary":false,"exec":false,"nominated":false,"wonAward":false,"slavaCups":1,"suspended":true,"confirmQ":""},{"name":"Makari","jersey":-1,"team":"Chicago Blackhawks","playoffs":true,"position":"UTIL","veteran":false,"gp":10,"goals":28,"assists":2,"potg":3,"everFO":false,"secretary":false,"exec":false,"nominated":false,"wonAward":false,"slavaCups":0,"suspended":false,"confirmQ":""},{"name":"nemmee","jersey":-1,"team":"Chicago Blackhawks","playoffs":true,"position":"UTIL","veteran":true,"gp":9,"goals":7,"assists":7,"potg":0,"everFO":false,"secretary":false,"exec":false,"nominated":false,"wonAward":false,"slavaCups":1,"suspended":false,"confirmQ":""},{"name":"Bread","jersey":-1,"team":"Chicago Blackhawks","playoffs":true,"position":"Defense","veteran":false,"gp":3,"goals":1,"assists":2,"potg":0,"everFO":false,"secretary":false,"exec":false,"nominated":false,"wonAward":false,"slavaCups":0,"suspended":true,"confirmQ":""},{"name":"jaxthedestroyer25","jersey":-1,"team":"Chicago Blackhawks","playoffs":true,"position":"Winger","veteran":false,"gp":0,"goals":0,"assists":0,"potg":0,"everFO":false,"secretary":false,"exec":false,"nominated":false,"wonAward":false,"slavaCups":0,"suspended":false,"confirmQ":""},{"name":"TimmyJim15","jersey":-1,"team":"Chicago Blackhawks","playoffs":true,"position":"Defense","veteran":false,"gp":3,"goals":0,"assists":1,"potg":0,"everFO":false,"secretary":false,"exec":false,"nominated":false,"wonAward":false,"slavaCups":0,"suspended":false,"confirmQ":""},{"name":"Def","jersey":-1,"team":"Los Angeles Kings","playoffs":false,"position":"Winger","veteran":false,"gp":14,"goals":96,"assists":21,"potg":4,"everFO":true,"secretary":false,"exec":false,"nominated":true,"wonAward":false,"slavaCups":1,"suspended":false,"confirmQ":"Is this player banned from being FO?"},{"name":"Marselo","jersey":-1,"team":"Los Angeles Kings","playoffs":false,"position":"Winger","veteran":false,"gp":9,"goals":41,"assists":4,"potg":2,"everFO":false,"secretary":false,"exec":false,"nominated":false,"wonAward":false,"slavaCups":0,"suspended":false,"confirmQ":""},{"name":"allstarmuscleman","jersey":-1,"team":"Los Angeles Kings","playoffs":false,"position":"Defense","veteran":false,"gp":8,"goals":2,"assists":15,"potg":0,"everFO":false,"secretary":false,"exec":false,"nominated":false,"wonAward":false,"slavaCups":1,"suspended":false,"confirmQ":"Does this player have his own batting academy?"},{"name":"The_Foreveren","jersey":-1,"team":"Los Angeles Kings","playoffs":false,"position":"Goalie","veteran":false,"gp":7,"goals":1,"assists":7,"potg":0,"everFO":false,"secretary":true,"exec":false,"nominated":false,"wonAward":false,"slavaCups":0,"suspended":false,"confirmQ":""},{"name":"Chopbound","jersey":-1,"team":"Los Angeles Kings","playoffs":false,"position":"UTIL","veteran":false,"gp":4,"goals":0,"assists":3,"potg":0,"everFO":true,"secretary":false,"exec":false,"nominated":false,"wonAward":false,"slavaCups":0,"suspended":false,"confirmQ":""},{"name":"Connorleapfart47","jersey":-1,"team":"Los Angeles Kings","playoffs":false,"position":"UTIL","veteran":true,"gp":7,"goals":3,"assists":6,"potg":0,"everFO":true,"secretary":false,"exec":false,"nominated":false,"wonAward":false,"slavaCups":0,"suspended":false,"confirmQ":"Is this player the G.O.A.T???"},{"name":"mercy1962","jersey":-1,"team":"Los Angeles Kings","playoffs":false,"position":"Defense","veteran":false,"gp":5,"goals":4,"assists":4,"potg":0,"everFO":false,"secretary":false,"exec":false,"nominated":true,"wonAward":false,"slavaCups":0,"suspended":false,"confirmQ":""},{"name":"xPapaSmerfx","jersey":-1,"team":"Los Angeles Kings","playoffs":false,"position":"UTIL","veteran":false,"gp":2,"goals":0,"assists":0,"potg":0,"everFO":false,"secretary":false,"exec":false,"nominated":false,"wonAward":false,"slavaCups":0,"suspended":false,"confirmQ":""},{"name":"valtryakv21","jersey":-1,"team":"Los Angeles Kings","playoffs":false,"position":"Defense","veteran":false,"gp":3,"goals":2,"assists":1,"potg":0,"everFO":false,"secretary":false,"exec":false,"nominated":false,"wonAward":false,"slavaCups":0,"suspended":false,"confirmQ":""},{"name":"PandulceLover","jersey":-1,"team":"Los Angeles Kings","playoffs":false,"position":"Goalie","veteran":false,"gp":1,"goals":0,"assists":0,"potg":0,"everFO":false,"secretary":false,"exec":false,"nominated":false,"wonAward":false,"slavaCups":0,"suspended":false,"confirmQ":""},{"name":"Lobsty","jersey":-1,"team":"Los Angeles Kings","playoffs":false,"position":"UTIL","veteran":true,"gp":3,"goals":5,"assists":3,"potg":0,"everFO":false,"secretary":false,"exec":false,"nominated":false,"wonAward":false,"slavaCups":0,"suspended":false,"confirmQ":""}]
+;
+
+const TEAM_COLORS = {}; // no per-team colors needed, keep neutral
+
+const BOOL_ATTRS = [
+  {key:'playoffs', text:'Did this player make the playoffs in Season 7?'},
+  {key:'veteran', text:'Did this player start playing before NRHA Season 1 (are they a league veteran)?'},
+  {key:'everFO', text:'Has this player ever been an FO?'},
+  {key:'secretary', text:'Is this player a secretary?'},
+  {key:'exec', text:'Is this player an exec?'},
+  {key:'nominated', text:'Was this player nominated for an award in Season 7?'},
+  {key:'wonAward', text:'Did this player win an award in Season 7?'},
+  {key:'suspended', text:'Was this player suspended at all during Season 7?'}
+];
+
+const CATEGORICAL_ATTRS = [
+  {key:'team', phrase:(v)=>`Does this player play for the ${v}?`},
+  {key:'position', phrase:(v)=> v==='UTIL' ? 'Does this player play more than one position (listed as UTIL)?' : `Is this player's main position ${v}?`}
+];
+
+function median(nums){
+  const s = [...nums].sort((a,b)=>a-b);
+  const mid = Math.floor(s.length/2);
+  return s.length % 2 ? s[mid] : (s[mid-1]+s[mid])/2;
+}
+const medianGoals = median(PLAYERS.map(p=>p.goals));
+const medianAssists = median(PLAYERS.map(p=>p.assists));
+
+// Derived, "interpreted" traits built by combining the raw stat columns —
+// these read like scouting notes instead of literal stat-threshold filters.
+PLAYERS.forEach(p=>{
+  p.traitSniper = p.goals > p.assists;
+  p.traitClutch = p.potg > 0;
+  p.traitCupChamp = p.slavaCups > 0;
+  p.traitDecorated = p.nominated && p.wonAward;
+  p.traitFrontOffice = p.secretary || p.exec || p.everFO;
+  p.traitRisingStar = !p.veteran && (p.goals >= medianGoals || p.assists >= medianAssists);
+});
+
+const TRAIT_ATTRS = [
+  {key:'traitSniper', text:'Does this player score more goals than they rack up assists — more of a sniper than a playmaker?'},
+  {key:'traitClutch', text:'Has this player ever earned a Player of the Game award in Season 7?'},
+  {key:'traitCupChamp', text:'Has this player ever won a Slava Cup?'},
+  {key:'traitDecorated', text:'Was this player both nominated for AND did they actually win an award in Season 7?'},
+  {key:'traitFrontOffice', text:'Has this player ever held a front-office role — exec, secretary, or FO?'},
+  {key:'traitRisingStar', text:"Is this player a newer face — not a league veteran — who's already putting up strong offensive numbers?"}
+];
+
+let candidates = [];
+let askedBool = new Set();
+let askedCat = new Set();
+let questionCount = 0;
+let currentQuestion = null;
+let guessModeQueue = null; // array of remaining candidates when in "guess now" mode
+let history = []; // for the "well actually" back button
+
+function resetState(){
+  candidates = PLAYERS.slice();
+  askedBool = new Set();
+  askedCat = new Set();
+  questionCount = 0;
+  currentQuestion = null;
+  guessModeQueue = null;
+  history = [];
+}
+
+function pickQuestion(pool){
+  const candidatesPool = [];
+  for (const a of [...BOOL_ATTRS, ...TRAIT_ATTRS]){
+    if (askedBool.has(a.key)) continue;
+    const yes = pool.filter(p=>p[a.key]).length;
+    const no = pool.length - yes;
+    if (yes===0 || no===0){ continue; }
+    candidatesPool.push({type:'bool', attr:a.key, text:a.text, yes, no, score:Math.min(yes,no)});
+  }
+  for (const a of CATEGORICAL_ATTRS){
+    const values = [...new Set(pool.map(p=>p[a.key]))];
+    for (const v of values){
+      const k = a.key+'|'+v;
+      if (askedCat.has(k)) continue;
+      const yes = pool.filter(p=>p[a.key]===v).length;
+      const no = pool.length - yes;
+      if (yes===pool.length || yes===0) continue;
+      candidatesPool.push({type:'cat', attr:a.key, value:v, text:a.phrase(v), yes, no, score:Math.min(yes,no)});
+    }
+  }
+  if (candidatesPool.length===0) return null;
+  candidatesPool.sort((x,y)=>y.score-x.score);
+  const topScore = candidatesPool[0].score;
+  const top = candidatesPool.filter(q=>q.score===topScore);
+  return top[Math.floor(Math.random()*top.length)];
+}
+
+function snapshotState(){
+  return {
+    candidates: candidates.slice(),
+    askedBool: new Set(askedBool),
+    askedCat: new Set(askedCat),
+    questionCount
+  };
+}
+function restoreState(s){
+  candidates = s.candidates;
+  askedBool = s.askedBool;
+  askedCat = s.askedCat;
+  questionCount = s.questionCount;
+}
+
+function applyAnswer(answer){ // 'yes' | 'no' | 'dk'
+  const q = currentQuestion;
+  history.push(snapshotState());
+  if (q.type==='bool'){
+    if (answer==='yes') candidates = candidates.filter(p=>p[q.attr]);
+    else if (answer==='no') candidates = candidates.filter(p=>!p[q.attr]);
+    askedBool.add(q.attr);
+  } else if (q.type==='cat'){
+    if (answer==='yes') candidates = candidates.filter(p=>p[q.attr]===q.value);
+    else if (answer==='no') candidates = candidates.filter(p=>p[q.attr]!==q.value);
+    askedCat.add(q.attr+'|'+q.value);
+  }
+  questionCount++;
+  proceed();
+}
+
+function proceed(){
+  if (candidates.length===0){ render('stumped'); return; }
+  if (candidates.length===1){ render('reveal-confirm', {player: candidates[0]}); return; }
+  const q = pickQuestion(candidates);
+  if (!q){ render('manual-pick'); return; }
+  currentQuestion = q;
+  render('question');
+}
+
+// ---------- Rendering ----------
+const app = document.getElementById('app');
+
+function esc(s){
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function render(view, data){
+  window.scrollTo(0,0);
+  if (view==='start') return renderStart();
+  if (view==='question') return renderQuestion();
+  if (view==='reveal-confirm') return renderRevealConfirm(data.player);
+  if (view==='guess') return renderGuess(data.player);
+  if (view==='win') return renderWin(data.player);
+  if (view==='number-form') return renderNumberForm(data.player);
+  if (view==='stumped') return renderStumped();
+  if (view==='manual-pick') return renderManualPick();
+  if (view==='admin') return renderAdmin();
+}
+
+function renderStart(){
+  app.innerHTML = `
+    <div class="fade-in">
+      <div class="eyebrow">NRHA · SEASON 7</div>
+      <h1 class="title">Slavanator</h1>
+      <p class="sub">Think of any Season 7 player. Answer honestly, and I'll try to guess who's in your head.</p>
+      <div class="card">
+        <p style="margin:0 0 20px;color:var(--ice-dim);font-size:14.5px;line-height:1.55;">
+          Answer Yes, No, or Don't Know for each question. I'll narrow it down from all ${PLAYERS.length} rostered players.
+        </p>
+        <button class="btn btn-primary" id="start-btn">Start Guessing</button>
+      </div>
+      <div class="footer-link"><button id="admin-link">Admin: view submitted jersey numbers</button></div>
+    </div>
+  `;
+  document.getElementById('start-btn').onclick = () => {
+    resetState();
+    proceed();
+  };
+  document.getElementById('admin-link').onclick = () => render('admin');
+}
+
+function progressPct(){
+  const remaining = candidates.length;
+  const pct = Math.max(6, 100 - (remaining / PLAYERS.length) * 100);
+  return Math.min(100, pct);
+}
+
+function renderQuestion(){
+  const q = currentQuestion;
+  const canGuessNow = candidates.length <= 8 && candidates.length > 1;
+  const canBack = history.length > 0;
+  app.innerHTML = `
+    <div class="fade-in">
+      <div class="eyebrow">NRHA · SEASON 7</div>
+      <h1 class="title" style="font-size:28px;">Slavanator</h1>
+      <div class="card">
+        <div class="meta-row">
+          <span>Question ${questionCount+1}</span>
+        </div>
+        <div class="progress-track"><div class="progress-fill" style="width:${progressPct()}%"></div></div>
+        <div class="question-text">${esc(q.text)}</div>
+        <div class="stack">
+          <div class="row">
+            <button class="btn btn-yes" id="ans-yes">Yes</button>
+            <button class="btn btn-no" id="ans-no">No</button>
+          </div>
+          <button class="btn btn-dk" id="ans-dk">Don't know</button>
+        </div>
+        ${canGuessNow ? `<button class="btn btn-ghost" id="guess-now" style="margin-top:14px;">I think you already know — guess now</button>` : ''}
+      </div>
+      <div class="footer-link">
+        ${canBack ? `<button id="back-btn">Undo last answer</button> &nbsp;·&nbsp; ` : ''}<button id="restart-btn">Restart</button>
+      </div>
+    </div>
+  `;
+  document.getElementById('ans-yes').onclick = () => applyAnswer('yes');
+  document.getElementById('ans-no').onclick = () => applyAnswer('no');
+  document.getElementById('ans-dk').onclick = () => applyAnswer('dk');
+  const gn = document.getElementById('guess-now');
+  if (gn) gn.onclick = () => startGuessMode();
+  document.getElementById('restart-btn').onclick = () => render('start');
+  const back = document.getElementById('back-btn');
+  if (back) back.onclick = () => {
+    const s = history.pop();
+    restoreState(s);
+    proceed();
+  };
+}
+
+function startGuessMode(){
+  guessModeQueue = candidates.slice();
+  guessNext();
+}
+function guessNext(){
+  if (!guessModeQueue || guessModeQueue.length===0){ render('stumped'); return; }
+  const player = guessModeQueue.shift();
+  render('guess', {player});
+}
+
+function renderRevealConfirm(player){
+  if (player.confirmQ){
+    app.innerHTML = `
+      <div class="fade-in">
+        <div class="eyebrow">NRHA · SEASON 7</div>
+        <h1 class="title" style="font-size:28px;">Slavanator</h1>
+        <div class="card">
+          <div class="thinking"><div class="dot"></div><div class="dot"></div><div class="dot"></div>&nbsp;I think I've got it. One more check —</div>
+          <div class="question-text">${esc(player.confirmQ)}</div>
+          <div class="row">
+            <button class="btn btn-yes" id="cf-yes">Yes</button>
+            <button class="btn btn-no" id="cf-no">No</button>
+          </div>
+        </div>
+        <div class="footer-link"><button id="restart-btn">Restart</button></div>
+      </div>
+    `;
+    document.getElementById('cf-yes').onclick = () => render('guess', {player});
+    document.getElementById('cf-no').onclick = () => render('stumped');
+    document.getElementById('restart-btn').onclick = () => render('start');
+  } else {
+    render('guess', {player});
+  }
+}
+
+function renderGuess(player){
+  app.innerHTML = `
+    <div class="fade-in">
+      <div class="eyebrow">NRHA · SEASON 7</div>
+      <h1 class="title" style="font-size:28px;">Slavanator</h1>
+      <div class="card">
+        <div class="thinking"><div class="dot"></div><div class="dot"></div><div class="dot"></div>&nbsp;My guess is...</div>
+        <div class="reveal-name">${esc(player.name)}</div>
+        <div class="reveal-team">${esc(player.team)} · ${esc(player.position)}</div>
+        <div class="row" style="margin-top:8px;">
+          <button class="btn btn-yes" id="g-yes">Yes, that's it!</button>
+          <button class="btn btn-no" id="g-no">Nope</button>
+        </div>
+      </div>
+      <div class="footer-link"><button id="restart-btn">Restart</button></div>
+    </div>
+  `;
+  document.getElementById('g-yes').onclick = () => {
+    if (player.jersey === -1) render('number-form', {player});
+    else render('win', {player});
+  };
+  document.getElementById('g-no').onclick = () => {
+    if (guessModeQueue !== null){
+      guessNext();
+    } else {
+      render('stumped');
+    }
+  };
+  document.getElementById('restart-btn').onclick = () => render('start');
+}
+
+function renderWin(player){
+  app.innerHTML = `
+    <div class="fade-in">
+      <div class="eyebrow">GOT IT IN ${questionCount} QUESTION${questionCount===1?'':'S'}</div>
+      <h1 class="title" style="font-size:30px;">Nailed it.</h1>
+      <div class="card">
+        <div class="reveal-name">${esc(player.name)}</div>
+        <div class="reveal-team">${esc(player.team)} · ${esc(player.position)}${player.jersey!==-1 ? ' · #'+player.jersey : ''}</div>
+        <div class="stat-grid">
+          <div class="stat-box"><div class="stat-num">${player.goals}</div><div class="stat-label">Goals</div></div>
+          <div class="stat-box"><div class="stat-num">${player.assists}</div><div class="stat-label">Assists</div></div>
+          <div class="stat-box"><div class="stat-num">${player.slavaCups}</div><div class="stat-label">Slava Cups</div></div>
+        </div>
+        <button class="btn btn-primary" id="play-again">Play Again</button>
+      </div>
+    </div>
+  `;
+  document.getElementById('play-again').onclick = () => render('start');
+}
+
+function renderNumberForm(player){
+  app.innerHTML = `
+    <div class="fade-in">
+      <div class="eyebrow">GOT IT IN ${questionCount} QUESTION${questionCount===1?'':'S'}</div>
+      <h1 class="title" style="font-size:30px;">Nailed it.</h1>
+      <div class="card">
+        <div class="reveal-name">${esc(player.name)}</div>
+        <div class="reveal-team">${esc(player.team)} · ${esc(player.position)}</div>
+        <p style="color:var(--ice-dim);font-size:14.5px;line-height:1.5;margin:18px 0 10px;">
+          Are you <span class="confirm-name">${esc(player.name)}</span>? Tell me your jersey number here — it's not on file yet, and it'll help fill out the roster.
+        </p>
+        <input type="number" id="jersey-input" placeholder="Jersey number" inputmode="numeric">
+        <div class="row">
+          <button class="btn btn-primary" id="submit-jersey">Submit Number</button>
+        </div>
+        <button class="btn btn-ghost" id="skip-jersey" style="margin-top:10px;">Skip / not me after all</button>
+      </div>
+    </div>
+  `;
+  document.getElementById('submit-jersey').onclick = async () => {
+    const val = document.getElementById('jersey-input').value.trim();
+    const btn = document.getElementById('submit-jersey');
+    if (!val || isNaN(parseInt(val,10))){
+      document.getElementById('jersey-input').style.borderColor = 'var(--red)';
+      return;
+    }
+    btn.disabled = true;
+    btn.textContent = 'Saving...';
+    try {
+      await submitJerseyNumber(player.name, parseInt(val,10));
+    } catch(e){ /* best effort */ }
+    render('win', {player});
+  };
+  document.getElementById('skip-jersey').onclick = () => render('stumped');
+}
+
+async function submitJerseyNumber(name, number){
+  let log = [];
+  try {
+    const existing = await window.storage.get('jersey_submissions', true);
+    if (existing && existing.value) log = JSON.parse(existing.value);
+  } catch(e) { log = []; }
+  log.push({name, number, ts: new Date().toISOString()});
+  await window.storage.set('jersey_submissions', JSON.stringify(log), true);
+}
+
+function renderStumped(){
+  app.innerHTML = `
+    <div class="fade-in">
+      <div class="eyebrow">NRHA · SEASON 7</div>
+      <h1 class="title" style="font-size:28px;">You win this one.</h1>
+      <div class="card">
+        <p style="color:var(--ice-dim);font-size:14.5px;line-height:1.6;margin:0 0 16px;">
+          I couldn't figure out who you were thinking of. Who was it?
+        </p>
+        <input type="text" id="who-input" list="roster-list" placeholder="Type a player name...">
+        <datalist id="roster-list">
+          ${PLAYERS.map(p=>`<option value="${esc(p.name)}">`).join('')}
+        </datalist>
+        <button class="btn btn-primary" id="reveal-who">Show Me</button>
+        <button class="btn btn-ghost" id="play-again-2" style="margin-top:10px;">Play Again</button>
+      </div>
+    </div>
+  `;
+  document.getElementById('reveal-who').onclick = () => {
+    const val = document.getElementById('who-input').value.trim().toLowerCase();
+    const found = PLAYERS.find(p=>p.name.toLowerCase()===val);
+    if (found){
+      alert(`${found.name} — ${found.team}, ${found.position}. Thanks for the tip!`);
+    }
+    render('start');
+  };
+  document.getElementById('play-again-2').onclick = () => render('start');
+}
+
+function renderManualPick(){
+  app.innerHTML = `
+    <div class="fade-in">
+      <div class="eyebrow">NRHA · SEASON 7</div>
+      <h1 class="title" style="font-size:28px;">Down to a few.</h1>
+      <div class="card">
+        <p style="color:var(--ice-dim);font-size:14.5px;line-height:1.6;margin:0 0 4px;">
+          These players match everything so far. Is it one of them?
+        </p>
+        <div class="pill-list">
+          ${candidates.map((p,i)=>`<button class="pill-btn" data-idx="${i}">${esc(p.name)}</button>`).join('')}
+        </div>
+        <button class="btn btn-ghost" id="none-of-these">None of these</button>
+      </div>
+      <div class="footer-link"><button id="restart-btn">Restart</button></div>
+    </div>
+  `;
+  candidates.forEach((p,i)=>{
+    const el = app.querySelector(`[data-idx="${i}"]`);
+    el.onclick = () => render('reveal-confirm', {player: p});
+  });
+  document.getElementById('none-of-these').onclick = () => render('stumped');
+  document.getElementById('restart-btn').onclick = () => render('start');
+}
+
+async function renderAdmin(){
+  app.innerHTML = `
+    <div class="fade-in">
+      <div class="eyebrow">ADMIN</div>
+      <h1 class="title" style="font-size:28px;">Submitted Numbers</h1>
+      <div class="card" id="admin-card">
+        <p style="color:var(--ice-dim);font-size:14px;">Loading...</p>
+      </div>
+      <div class="footer-link"><button id="back-start">Back to game</button></div>
+    </div>
+  `;
+  document.getElementById('back-start').onclick = () => render('start');
+  let log = [];
+  try {
+    const existing = await window.storage.get('jersey_submissions', true);
+    if (existing && existing.value) log = JSON.parse(existing.value);
+  } catch(e){ log = []; }
+  const card = document.getElementById('admin-card');
+  if (log.length===0){
+    card.innerHTML = `<p style="color:var(--ice-dim);font-size:14px;">No submissions yet.</p>`;
+    return;
+  }
+  const rows = log.slice().reverse().map(e=>`<tr><td>${esc(e.name)}</td><td>#${esc(e.number)}</td><td>${esc(new Date(e.ts).toLocaleString())}</td></tr>`).join('');
+  card.innerHTML = `
+    <table class="admin-table">
+      <tr><th>Player</th><th>Number</th><th>Submitted</th></tr>
+      ${rows}
+    </table>
+    <button class="btn btn-ghost" id="copy-csv">Copy as CSV</button>
+  `;
+  document.getElementById('copy-csv').onclick = () => {
+    const csv = 'name,number,timestamp\n' + log.map(e=>`${e.name},${e.number},${e.ts}`).join('\n');
+    navigator.clipboard.writeText(csv).then(()=>{
+      document.getElementById('copy-csv').textContent = 'Copied!';
+      setTimeout(()=>{ document.getElementById('copy-csv').textContent = 'Copy as CSV'; }, 1500);
+    });
+  };
+}
+
+render('start');
+</script>
+</body>
+</html>
