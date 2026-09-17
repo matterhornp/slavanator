@@ -860,6 +860,7 @@ function renderFeedback(context){
         <p style="color:var(--ice-dim);font-size:14.5px;line-height:1.6;margin:0 0 14px;">
           Leave a review, bug report, or idea for a future update. It goes straight to whoever's running this.
         </p>
+        <input type="text" id="feedback-name" placeholder="Your name (optional)">
         <textarea id="feedback-input" rows="5" placeholder="What worked, what didn't, what you'd add..."
           style="width:100%;background:rgba(234,244,251,0.05);border:1px solid var(--panel-line);border-radius:8px;padding:13px 14px;color:var(--ice);font-size:15px;font-family:'Inter',sans-serif;margin-bottom:12px;resize:vertical;"></textarea>
         <button class="btn btn-primary" id="submit-feedback">Send Feedback</button>
@@ -869,7 +870,9 @@ function renderFeedback(context){
   `;
   document.getElementById('submit-feedback').onclick = async () => {
     const input = document.getElementById('feedback-input');
+    const nameInput = document.getElementById('feedback-name');
     const val = input.value.trim();
+    const name = nameInput.value.trim();
     const btn = document.getElementById('submit-feedback');
     if (!val){
       input.style.borderColor = 'var(--red)';
@@ -878,7 +881,7 @@ function renderFeedback(context){
     btn.disabled = true;
     btn.textContent = 'Sending...';
     try {
-      await submitFeedback(val, context);
+      await submitFeedback(val, context, name);
       render('feedback-sent');
     } catch(e){
       btn.disabled = false;
@@ -905,7 +908,7 @@ function renderFeedbackSent(){
   document.getElementById('back-to-start').onclick = () => render('start');
 }
 
-async function submitFeedback(message, context){
+async function submitFeedback(message, context, name){
   const response = await fetch(`${SUPABASE_URL}/rest/v1/feedback_submissions`, {
     method: 'POST',
     headers: {
@@ -916,7 +919,8 @@ async function submitFeedback(message, context){
     },
     body: JSON.stringify({
       message: message,
-      context: context || null
+      context: context || null,
+      reviewer_name: name || null
     })
   });
 
