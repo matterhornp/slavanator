@@ -555,6 +555,8 @@ function render(view, data){
   if (view==='number-form') return renderNumberForm(data.player);
   if (view==='stumped') return renderStumped();
   if (view==='manual-pick') return renderManualPick();
+  if (view==='feedback') return renderFeedback(data && data.context);
+  if (view==='feedback-sent') return renderFeedbackSent();
 }
 
 function renderStart(){
@@ -722,10 +724,14 @@ function renderWin(player){
           <div class="stat-box"><div class="stat-num">${player.slavaCups}</div><div class="stat-label">Slava Cups</div></div>
         </div>
         <button class="btn btn-primary" id="play-again">Play Again</button>
+        <button class="btn btn-ghost" id="leave-feedback" style="margin-top:10px;">Leave feedback / suggest something</button>
       </div>
     </div>
   `;
   document.getElementById('play-again').onclick = () => render('start');
+  document.getElementById('leave-feedback').onclick = () => render('feedback', {
+    context: `Correct guess: ${player.name} (${questionCount} question${questionCount===1?'':'s'})`
+  });
 }
 
 function renderNumberForm(player){
@@ -829,6 +835,7 @@ function renderStumped(){
         </datalist>
         <button class="btn btn-primary" id="reveal-who">Show Me</button>
         <button class="btn btn-ghost" id="play-again-2" style="margin-top:10px;">Play Again</button>
+        <button class="btn btn-ghost" id="leave-feedback-2" style="margin-top:6px;">Leave feedback / suggest something</button>
       </div>
     </div>
   `;
@@ -841,6 +848,82 @@ function renderStumped(){
     render('start');
   };
   document.getElementById('play-again-2').onclick = () => render('start');
+  document.getElementById('leave-feedback-2').onclick = () => render('feedback', {context: 'Stumped the game'});
+}
+
+function renderFeedback(context){
+  app.innerHTML = `
+    <div class="fade-in">
+      <div class="eyebrow">NRHA · SEASON 7</div>
+      <h1 class="title" style="font-size:28px;">Got a suggestion?</h1>
+      <div class="card">
+        <p style="color:var(--ice-dim);font-size:14.5px;line-height:1.6;margin:0 0 14px;">
+          Leave a review, bug report, or idea for a future update. It goes straight to whoever's running this.
+        </p>
+        <textarea id="feedback-input" rows="5" placeholder="What worked, what didn't, what you'd add..."
+          style="width:100%;background:rgba(234,244,251,0.05);border:1px solid var(--panel-line);border-radius:8px;padding:13px 14px;color:var(--ice);font-size:15px;font-family:'Inter',sans-serif;margin-bottom:12px;resize:vertical;"></textarea>
+        <button class="btn btn-primary" id="submit-feedback">Send Feedback</button>
+        <button class="btn btn-ghost" id="cancel-feedback" style="margin-top:10px;">Never mind</button>
+      </div>
+    </div>
+  `;
+  document.getElementById('submit-feedback').onclick = async () => {
+    const input = document.getElementById('feedback-input');
+    const val = input.value.trim();
+    const btn = document.getElementById('submit-feedback');
+    if (!val){
+      input.style.borderColor = 'var(--red)';
+      return;
+    }
+    btn.disabled = true;
+    btn.textContent = 'Sending...';
+    try {
+      await submitFeedback(val, context);
+      render('feedback-sent');
+    } catch(e){
+      btn.disabled = false;
+      btn.textContent = 'Send Feedback';
+      alert('Could not send your feedback. Please try again.');
+    }
+  };
+  document.getElementById('cancel-feedback').onclick = () => render('start');
+}
+
+function renderFeedbackSent(){
+  app.innerHTML = `
+    <div class="fade-in">
+      <div class="eyebrow">NRHA · SEASON 7</div>
+      <h1 class="title" style="font-size:28px;">Thanks!</h1>
+      <div class="card">
+        <p style="color:var(--ice-dim);font-size:14.5px;line-height:1.6;margin:0 0 16px;">
+          Your feedback was sent.
+        </p>
+        <button class="btn btn-primary" id="back-to-start">Back to Start</button>
+      </div>
+    </div>
+  `;
+  document.getElementById('back-to-start').onclick = () => render('start');
+}
+
+async function submitFeedback(message, context){
+  const response = await fetch(`${SUPABASE_URL}/rest/v1/feedback_submissions`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'apikey': SUPABASE_ANON_KEY,
+      'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+      'Prefer': 'return=minimal'
+    },
+    body: JSON.stringify({
+      message: message,
+      context: context || null
+    })
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`Feedback submission failed (${response.status}): ${errorText}`);
+  }
 }
 
 function renderManualPick(){
